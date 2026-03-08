@@ -44,11 +44,14 @@ if (isset($_SESSION['cart'])) {
 
         <?php if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])): ?>
             <div class="empty-cart">
-                <p>Your cart is currently empty.</p>
-                <a href="index.php" class="btn btn-primary mt-3">Continue Shopping</a>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added anything to your cart yet.</p>
+                <div style="margin-top: 2rem;">
+                    <a href="index.php" class="btn btn-primary">Start Shopping</a>
+                </div>
             </div>
         <?php else: ?>
-            <div class="cart-table-container">
+            <div class="cart-container">
                 <table class="cart-table">
                     <thead>
                         <tr>
@@ -60,28 +63,33 @@ if (isset($_SESSION['cart'])) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($_SESSION['cart'] as $id => $item): ?>
+                        <?php foreach ($_SESSION['cart'] as $id => $item): 
+                            $product_image = "images/" . strtolower($item['name']) . ".png";
+                        ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($item['name']); ?></td>
+                            <td>
+                                <div class="product-name-with-img">
+                                    <img src="<?php echo htmlspecialchars($product_image); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" class="product-thumbnail">
+                                    <span><?php echo htmlspecialchars($item['name']); ?></span>
+                                </div>
+                            </td>
                             <td>₹<?php echo htmlspecialchars($item['price']); ?></td>
                             <td><?php echo htmlspecialchars($item['quantity']); ?></td>
-                            <td>₹<?php echo htmlspecialchars($item['price'] * $item['quantity']); ?></td>
+                            <td style="font-weight:600; color:var(--primary-color);">₹<?php echo htmlspecialchars($item['price'] * $item['quantity']); ?></td>
                             <td>
-                                <a href="cart.php?remove=<?php echo $id; ?>" class="btn btn-danger btn-sm">Remove</a>
+                                <a href="cart.php?remove=<?php echo $id; ?>" class="btn btn-danger btn-sm" style="padding:0.5rem 1rem; width:auto; font-size:0.9rem;">Remove</a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-right"><strong>Total Amount:</strong></td>
-                            <td colspan="2"><strong>₹<?php echo $total_amount; ?></strong></td>
-                        </tr>
-                    </tfoot>
                 </table>
-            </div>
-            <div class="cart-actions mt-3 text-right">
-                <a href="checkout.php" class="btn btn-success">Proceed to Checkout</a>
+                <div class="cart-summary">
+                    <h3><span>Total Amount:</span> <span>₹<?php echo $total_amount; ?></span></h3>
+                    <div class="cart-actions">
+                        <a href="index.php" class="btn" style="background:var(--secondary-color); color:var(--text-main); border:1px solid var(--border-color);">Continue Shopping</a>
+                        <a href="checkout.php" class="btn btn-success">Proceed to Checkout</a>
+                    </div>
+                </div>
             </div>
         <?php endif; ?>
     </main>

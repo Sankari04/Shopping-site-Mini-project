@@ -60,9 +60,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
         <div class="product-grid">
             <?php foreach ($products as $id => $product): ?>
             <div class="product-card">
-                <div class="product-image-placeholder">
+                <!-- <div class="product-image-placeholder">
                     <span><?php echo $product['name']; ?> Image</span>
-                </div>
+                </div> -->
+                <img src="<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-image">
                 <div class="product-info">
                     <h3><?php echo htmlspecialchars($product['name']); ?></h3>
                     <p class="price">₹<?php echo htmlspecialchars($product['price']); ?></p>
