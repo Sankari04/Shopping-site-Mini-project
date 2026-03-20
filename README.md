@@ -15,7 +15,7 @@
 ## Setup
 1. Start XAMPP (Apache + MySQL)
 2. Import setup.sql in phpMyAdmin
-3. Run: http://localhost/shopping-site/
+3. Run: http://localhost/shopcart_miniproject/
    
 ## Folder Structure
 
