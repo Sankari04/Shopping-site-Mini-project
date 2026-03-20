@@ -1,0 +1,785 @@
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    body { font-family: 'Courier New', Courier, monospace; font-size: 10.5pt; }
+    p { margin: 0; padding: 0; }
+    h2 { font-family: Arial, sans-serif; margin-top: 20px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<h2>FILE: index.php</h2>
+<p>&lt;?php</p>
+<p>session_start();</p>
+<p>&nbsp;</p>
+<p>// Initialize products</p>
+<p>$products = [</p>
+<p>1 =&gt; ['name' =&gt; 'Book', 'price' =&gt; 200, 'image' =&gt; 'images/book.png'],</p>
+<p>2 =&gt; ['name' =&gt; 'Pen', 'price' =&gt; 20, 'image' =&gt; 'images/pen.png'],</p>
+<p>3 =&gt; ['name' =&gt; 'Notebook', 'price' =&gt; 80, 'image' =&gt; 'images/notebook.png'],</p>
+<p>];</p>
+<p>&nbsp;</p>
+<p>// Handle add to cart</p>
+<p>if ($_SERVER['REQUEST_METHOD'] === 'POST' &amp;&amp; isset($_POST['add_to_cart'])) {</p>
+<p>$product_id = $_POST['product_id'];</p>
+<p>if (isset($products[$product_id])) {</p>
+<p>// Initialize cart session if not exists</p>
+<p>if (!isset($_SESSION['cart'])) {</p>
+<p>$_SESSION['cart'] = [];</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>// Add or update quantity</p>
+<p>if (isset($_SESSION['cart'][$product_id])) {</p>
+<p>$_SESSION['cart'][$product_id]['quantity']++;</p>
+<p>} else {</p>
+<p>$_SESSION['cart'][$product_id] = [</p>
+<p>'name' =&gt; $products[$product_id]['name'],</p>
+<p>'price' =&gt; $products[$product_id]['price'],</p>
+<p>'quantity' =&gt; 1</p>
+<p>];</p>
+<p>}</p>
+<p>$message = "Added to cart successfully!";</p>
+<p>}</p>
+<p>}</p>
+<p>?&gt;</p>
+<p>&lt;!DOCTYPE html&gt;</p>
+<p>&lt;html lang="en"&gt;</p>
+<p>&lt;head&gt;</p>
+<p>&lt;meta charset="UTF-8"&gt;</p>
+<p>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p>&lt;title&gt;Simple Shopping Cart - Home&lt;/title&gt;</p>
+<p>&lt;link rel="stylesheet" href="style.css"&gt;</p>
+<p>&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;nav class="navbar"&gt;</p>
+<p>&lt;div class="container"&gt;</p>
+<p>&lt;a href="index.php" class="brand"&gt;StudentShop&lt;/a&gt;</p>
+<p>&lt;ul class="nav-links"&gt;</p>
+<p>&lt;li&gt;&lt;a href="index.php" class="active"&gt;Home&lt;/a&gt;&lt;/li&gt;</p>
+<p>&lt;li&gt;&lt;a href="cart.php"&gt;Cart (&lt;?php echo isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart'], 'quantity')) : 0; ?&gt;)&lt;/a&gt;&lt;/li&gt;</p>
+<p>&lt;li&gt;&lt;a href="checkout.php"&gt;Checkout&lt;/a&gt;&lt;/li&gt;</p>
+<p>&lt;/ul&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/nav&gt;</p>
+<p>&nbsp;</p>
+<p>&lt;main class="container"&gt;</p>
+<p>&lt;h1 class="page-title"&gt;Our Products&lt;/h1&gt;</p>
+<p>&lt;?php if (isset($message)): ?&gt;</p>
+<p>&lt;div class="alert success"&gt;&lt;?php echo $message; ?&gt;&lt;/div&gt;</p>
+<p>&lt;?php endif; ?&gt;</p>
+<p>&nbsp;</p>
+<p>&lt;div class="product-grid"&gt;</p>
+<p>&lt;?php foreach ($products as $id =&gt; $product): ?&gt;</p>
+<p>&lt;div class="product-card"&gt;</p>
+<p>&lt;!-- &lt;div class="product-image-placeholder"&gt;</p>
+<p>&lt;span&gt;&lt;?php echo $product['name']; ?&gt; Image&lt;/span&gt;</p>
+<p>&lt;/div&gt; --&gt;</p>
+<p>&lt;img src="&lt;?php echo htmlspecialchars($product['image']); ?&gt;" alt="&lt;?php echo htmlspecialchars($product['name']); ?&gt;" class="product-image"&gt;</p>
+<p>&lt;div class="product-info"&gt;</p>
+<p>&lt;h3&gt;&lt;?php echo htmlspecialchars($product['name']); ?&gt;&lt;/h3&gt;</p>
+<p>&lt;p class="price"&gt;₹&lt;?php echo htmlspecialchars($product['price']); ?&gt;&lt;/p&gt;</p>
+<p>&lt;form method="POST" action="index.php"&gt;</p>
+<p>&lt;input type="hidden" name="product_id" value="&lt;?php echo $id; ?&gt;"&gt;</p>
+<p>&lt;button type="submit" name="add_to_cart" class="btn btn-primary"&gt;Add to Cart&lt;/button&gt;</p>
+<p>&lt;/form&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;?php endforeach; ?&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/main&gt;</p>
+<p>&lt;/body&gt;</p>
+<p>&lt;/html&gt;</p>
+<p>&nbsp;</p>
+<br/>
+<h2>FILE: cart.php</h2>
+<p>&lt;?php</p>
+<p>session_start();</p>
+<p>&nbsp;</p>
+<p>// Handle remove item</p>
+<p>if (isset($_GET['remove'])) {</p>
+<p>$remove_id = $_GET['remove'];</p>
+<p>if (isset($_SESSION['cart'][$remove_id])) {</p>
+<p>unset($_SESSION['cart'][$remove_id]);</p>
+<p>}</p>
+<p>header("Location: cart.php");</p>
+<p>exit();</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>// Calculate total amount</p>
+<p>$total_amount = 0;</p>
+<p>if (isset($_SESSION['cart'])) {</p>
+<p>foreach ($_SESSION['cart'] as $item) {</p>
+<p>$total_amount += $item['price'] * $item['quantity'];</p>
+<p>}</p>
+<p>}</p>
+<p>?&gt;</p>
+<p>&lt;!DOCTYPE html&gt;</p>
+<p>&lt;html lang="en"&gt;</p>
+<p>&lt;head&gt;</p>
+<p>&lt;meta charset="UTF-8"&gt;</p>
+<p>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p>&lt;title&gt;Simple Shopping Cart - Cart&lt;/title&gt;</p>
+<p>&lt;link rel="stylesheet" href="style.css"&gt;</p>
+<p>&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;nav class="navbar"&gt;</p>
+<p>&lt;div class="container"&gt;</p>
+<p>&lt;a href="index.php" class="brand"&gt;StudentShop&lt;/a&gt;</p>
+<p>&lt;ul class="nav-links"&gt;</p>
+<p>&lt;li&gt;&lt;a href="index.php"&gt;Home&lt;/a&gt;&lt;/li&gt;</p>
+<p>&lt;li&gt;&lt;a href="cart.php" class="active"&gt;Cart (&lt;?php echo isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart'], 'quantity')) : 0; ?&gt;)&lt;/a&gt;&lt;/li&gt;</p>
+<p>&lt;li&gt;&lt;a href="checkout.php"&gt;Checkout&lt;/a&gt;&lt;/li&gt;</p>
+<p>&lt;/ul&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/nav&gt;</p>
+<p>&nbsp;</p>
+<p>&lt;main class="container"&gt;</p>
+<p>&lt;h1 class="page-title"&gt;Your Shopping Cart&lt;/h1&gt;</p>
+<p>&nbsp;</p>
+<p>&lt;?php if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])): ?&gt;</p>
+<p>&lt;div class="empty-cart"&gt;</p>
+<p>&lt;h2&gt;Your cart is empty&lt;/h2&gt;</p>
+<p>&lt;p&gt;Looks like you haven't added anything to your cart yet.&lt;/p&gt;</p>
+<p>&lt;div style="margin-top: 2rem;"&gt;</p>
+<p>&lt;a href="index.php" class="btn btn-primary"&gt;Start Shopping&lt;/a&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;?php else: ?&gt;</p>
+<p>&lt;div class="cart-container"&gt;</p>
+<p>&lt;table class="cart-table"&gt;</p>
+<p>&lt;thead&gt;</p>
+<p>&lt;tr&gt;</p>
+<p>&lt;th&gt;Product&lt;/th&gt;</p>
+<p>&lt;th&gt;Price&lt;/th&gt;</p>
+<p>&lt;th&gt;Quantity&lt;/th&gt;</p>
+<p>&lt;th&gt;Subtotal&lt;/th&gt;</p>
+<p>&lt;th&gt;Action&lt;/th&gt;</p>
+<p>&lt;/tr&gt;</p>
+<p>&lt;/thead&gt;</p>
+<p>&lt;tbody&gt;</p>
+<p>&lt;?php foreach ($_SESSION['cart'] as $id =&gt; $item): </p>
+<p>$product_image = "images/" . strtolower($item['name']) . ".png";</p>
+<p>?&gt;</p>
+<p>&lt;tr&gt;</p>
+<p>&lt;td&gt;</p>
+<p>&lt;div class="product-name-with-img"&gt;</p>
+<p>&lt;img src="&lt;?php echo htmlspecialchars($product_image); ?&gt;" alt="&lt;?php echo htmlspecialchars($item['name']); ?&gt;" </p>
+<p>class="product-thumbnail"&gt;</p>
+<p>&lt;span&gt;&lt;?php echo htmlspecialchars($item['name']); ?&gt;&lt;/span&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/td&gt;</p>
+<p>&lt;td&gt;₹&lt;?php echo htmlspecialchars($item['price']); ?&gt;&lt;/td&gt;</p>
+<p>&lt;td&gt;&lt;?php echo htmlspecialchars($item['quantity']); ?&gt;&lt;/td&gt;</p>
+<p>&lt;td style="font-weight:600; color:var(--primary-color);"&gt;₹&lt;?php echo htmlspecialchars($item['price'] * $item['quantity']); ?&gt;&lt;/td&gt;</p>
+<p>&lt;td&gt;</p>
+<p>&lt;a href="cart.php?remove=&lt;?php echo $id; ?&gt;" class="btn btn-danger btn-sm" </p>
+<p>style="padding:0.5rem 1rem; width:auto; font-size:0.9rem;"&gt;Remove&lt;/a&gt;</p>
+<p>&lt;/td&gt;</p>
+<p>&lt;/tr&gt;</p>
+<p>&lt;?php endforeach; ?&gt;</p>
+<p>&lt;/tbody&gt;</p>
+<p>&lt;/table&gt;</p>
+<p>&lt;div class="cart-summary"&gt;</p>
+<p>&lt;h3&gt;&lt;span&gt;Total Amount:&lt;/span&gt; &lt;span&gt;₹&lt;?php echo $total_amount; ?&gt;&lt;/span&gt;&lt;/h3&gt;</p>
+<p>&lt;div class="cart-actions"&gt;</p>
+<p>&lt;a href="index.php" class="btn" style="background:var(--secondary-color); color:var(--text-main); border:1px solid var(--border-color);"&gt;</p>
+<p>Continue Shopping&lt;/a&gt;</p>
+<p>&lt;a href="checkout.php" class="btn btn-success"&gt;Proceed to Checkout&lt;/a&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;?php endif; ?&gt;</p>
+<p>&lt;/main&gt;</p>
+<p>&lt;/body&gt;</p>
+<p>&lt;/html&gt;</p>
+<p>&nbsp;</p>
+<br/>
+<h2>FILE: checkout.php</h2>
+<p>&lt;?php</p>
+<p>session_start();</p>
+<p>&nbsp;</p>
+<p>// Calculate total amount for display</p>
+<p>$total_amount = 0;</p>
+<p>if (isset($_SESSION['cart'])) {</p>
+<p>foreach ($_SESSION['cart'] as $item) {</p>
+<p>$total_amount += $item['price'] * $item['quantity'];</p>
+<p>}</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>$order_success = false;</p>
+<p>$username = isset($_COOKIE['username']) ? $_COOKIE['username'] : '';</p>
+<p>&nbsp;</p>
+<p>// Handle checkout submission</p>
+<p>if ($_SERVER['REQUEST_METHOD'] === 'POST' &amp;&amp; isset($_POST['checkout'])) {</p>
+<p>$submitted_name = htmlspecialchars(trim($_POST['username']));</p>
+<p>&nbsp;</p>
+<p>// Set a cookie for the username, expires in 30 days</p>
+<p>setcookie('username', $submitted_name, time() + (86400 * 30), "/");</p>
+<p>$username = $submitted_name; // update for current view</p>
+<p>&nbsp;</p>
+<p>// Process order (simulated)</p>
+<p>$order_success = true;</p>
+<p>&nbsp;</p>
+<p>// Clear the cart session after completion</p>
+<p>unset($_SESSION['cart']);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>// Redirect to cart if empty and not just ordered</p>
+<p>if (!$order_success &amp;&amp; empty($_SESSION['cart'])) {</p>
+<p>header("Location: cart.php");</p>
+<p>exit();</p>
+<p>}</p>
+<p>?&gt;</p>
+<p>&lt;!DOCTYPE html&gt;</p>
+<p>&lt;html lang="en"&gt;</p>
+<p>&lt;head&gt;</p>
+<p>&lt;meta charset="UTF-8"&gt;</p>
+<p>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p>&lt;title&gt;Simple Shopping Cart - Checkout&lt;/title&gt;</p>
+<p>&lt;link rel="stylesheet" href="style.css"&gt;</p>
+<p>&lt;/head&gt;</p>
+<p>&lt;body&gt;</p>
+<p>&lt;nav class="navbar"&gt;</p>
+<p>&lt;div class="container"&gt;</p>
+<p>&lt;a href="index.php" class="brand"&gt;StudentShop&lt;/a&gt;</p>
+<p>&lt;ul class="nav-links"&gt;</p>
+<p>&lt;li&gt;&lt;a href="index.php"&gt;Home&lt;/a&gt;&lt;/li&gt;</p>
+<p>&lt;li&gt;&lt;a href="cart.php"&gt;Cart (&lt;?php echo isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart'], 'quantity')) : 0; ?&gt;)&lt;/a&gt;&lt;/li&gt;</p>
+<p>&lt;li&gt;&lt;a href="checkout.php" class="active"&gt;Checkout&lt;/a&gt;&lt;/li&gt;</p>
+<p>&lt;/ul&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/nav&gt;</p>
+<p>&nbsp;</p>
+<p>&lt;main class="container"&gt;</p>
+<p>&lt;?php if ($order_success): ?&gt;</p>
+<p>&lt;div class="alert success" style="text-align:center; padding: 4rem 2rem; background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-top:2rem;"&gt;</p>
+<p>&lt;div style="font-size: 4rem; color: var(--success-color); margin-bottom: 1rem;"&gt;✓&lt;/div&gt;</p>
+<p>&lt;h2 style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-main);"&gt;Order Confirmed!&lt;/h2&gt;</p>
+<p>&lt;p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 0.5rem;"&gt;Thank you for your purchase, &lt;strong&gt;&lt;?php echo htmlspecialchars($username); ?&gt;&lt;/strong&gt;.&lt;/p&gt;</p>
+<p>&lt;p style="color: var(--text-muted); margin-bottom: 2.5rem;"&gt;Your order has been placed successfully. The session cart has been cleared.&lt;/p&gt;</p>
+<p>&lt;a href="index.php" class="btn btn-primary" style="width: auto; padding: 1rem 2rem; font-size: 1.1rem;"&gt;Continue Shopping&lt;/a&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;?php else: ?&gt;</p>
+<p>&lt;h1 class="page-title"&gt;Checkout&lt;/h1&gt;</p>
+<p>&nbsp;</p>
+<p>&lt;?php if ($username): ?&gt;</p>
+<p>&lt;div class="alert" style="background:var(--secondary-color); color:var(--text-main); border-left:4px solid var(--primary-color);"&gt;</p>
+<p>Welcome back, &lt;strong&gt;&lt;?php echo htmlspecialchars($username); ?&gt;&lt;/strong&gt;! Please confirm your order.</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;?php endif; ?&gt;</p>
+<p>&nbsp;</p>
+<p>&lt;div class="checkout-layout"&gt;</p>
+<p>&lt;div class="checkout-form-container"&gt;</p>
+<p>&lt;h2 style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);"&gt;Shipping Details&lt;/h2&gt;</p>
+<p>&lt;form method="POST" action="checkout.php" class="checkout-form"&gt;</p>
+<p>&lt;div class="form-group"&gt;</p>
+<p>&lt;label for="username"&gt;Your Full Name&lt;/label&gt;</p>
+<p>&lt;input type="text" id="username" name="username" class="form-control" required </p>
+<p>value="&lt;?php echo htmlspecialchars($username); ?&gt;" </p>
+<p>placeholder="e.g. John Doe"&gt;</p>
+<p>&lt;small style="color:var(--text-muted); font-size:0.85rem; display:block; margin-top:0.5rem;"&gt;Your name will be saved in a cookie for future visits.&lt;/small&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;div style="margin-top: 2rem;"&gt;</p>
+<p>&lt;button type="submit" name="checkout" class="btn btn-primary" style="font-size: 1.1rem; padding: 1.2rem;"&gt;Complete Order&lt;/button&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/form&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&nbsp;</p>
+<p>&lt;div class="checkout-summary-container"&gt;</p>
+<p>&lt;div class="product-info" style="border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 2rem; box-shadow: var(--shadow-sm);"&gt;</p>
+<p>&lt;h2 style="margin-bottom: 1.5rem;"&gt;Order Summary&lt;/h2&gt;</p>
+<p>&lt;table class="checkout-table" style="margin-top: 0; box-shadow: none; width: 100%;"&gt;</p>
+<p>&lt;tbody&gt;</p>
+<p>&lt;?php foreach ($_SESSION['cart'] as $item): </p>
+<p>$product_image = "images/" . strtolower($item['name']) . ".png";</p>
+<p>?&gt;</p>
+<p>&lt;tr style="border-bottom: 1px solid var(--border-color);"&gt;</p>
+<p>&lt;td style="padding: 1rem 0;"&gt;</p>
+<p>&lt;div class="product-name-with-img"&gt;</p>
+<p>&lt;img src="&lt;?php echo htmlspecialchars($product_image); ?&gt;" alt="&lt;?php echo htmlspecialchars($item['name']); ?&gt;" class="product-thumbnail" style="width: 50px; height: 50px;"&gt;</p>
+<p>&lt;div&gt;</p>
+<p>&lt;div style="font-weight: 600; color: var(--text-main);"&gt;&lt;?php echo htmlspecialchars($item['name']); ?&gt;&lt;/div&gt;</p>
+<p>&lt;div style="font-size: 0.85rem; color: var(--text-muted);"&gt;Qty: &lt;?php echo htmlspecialchars($item['quantity']); ?&gt;&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/td&gt;</p>
+<p>&lt;td style="text-align: right; padding: 1rem 0; font-weight: 600;"&gt;₹&lt;?php echo htmlspecialchars($item['price'] * $item['quantity']); ?&gt;&lt;/td&gt;</p>
+<p>&lt;/tr&gt;</p>
+<p>&lt;?php endforeach; ?&gt;</p>
+<p>&lt;/tbody&gt;</p>
+<p>&lt;/table&gt;</p>
+<p>&lt;div style="margin-top: 1.5rem; padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;"&gt;</p>
+<p>&lt;span style="font-size: 1.2rem; font-weight: 600;"&gt;Total Amount to Pay&lt;/span&gt;</p>
+<p>&lt;span style="font-size: 1.8rem; font-weight: 800; color: var(--primary-color);"&gt;₹&lt;?php echo $total_amount; ?&gt;&lt;/span&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;/div&gt;</p>
+<p>&lt;?php endif; ?&gt;</p>
+<p>&lt;/main&gt;</p>
+<p>&lt;/body&gt;</p>
+<p>&lt;/html&gt;</p>
+<p>&nbsp;</p>
+<br/>
+<h2>FILE: style.css</h2>
+<p>:root {</p>
+<p>--primary-color: #6366f1; /* Indigo */</p>
+<p>--primary-hover: #4f46e5;</p>
+<p>--secondary-color: #f8fafc;</p>
+<p>--accent-color: #ec4899; /* Pink */</p>
+<p>--text-main: #1e293b;</p>
+<p>--text-muted: #64748b;</p>
+<p>--bg-color: #f1f5f9;</p>
+<p>--card-bg: #ffffff;</p>
+<p>--border-color: #e2e8f0;</p>
+<p>--success-color: #10b981;</p>
+<p>--danger-color: #ef4444;</p>
+<p>--radius-sm: 8px;</p>
+<p>--radius-md: 12px;</p>
+<p>--radius-lg: 20px;</p>
+<p>--shadow-sm: 0 1px 3px rgba(0,0,0,0.05);</p>
+<p>--shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);</p>
+<p>--shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);</p>
+<p>--shadow-hover: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>* {</p>
+<p>margin: 0;</p>
+<p>padding: 0;</p>
+<p>box-sizing: border-box;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>body {</p>
+<p>font-family: 'Inter', system-ui, -apple-system, sans-serif;</p>
+<p>background-color: var(--bg-color);</p>
+<p>color: var(--text-main);</p>
+<p>line-height: 1.6;</p>
+<p>-webkit-font-smoothing: antialiased;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Typography Enhancements */</p>
+<p>h1, h2, h3, h4, h5, h6 {</p>
+<p>font-weight: 700;</p>
+<p>letter-spacing: -0.025em;</p>
+<p>color: var(--text-main);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.page-title {</p>
+<p>text-align: center;</p>
+<p>margin: 3rem 0;</p>
+<p>font-size: 2.5rem;</p>
+<p>font-weight: 800;</p>
+<p>background: linear-gradient(135deg, var(--primary-color), var(--accent-color));</p>
+<p>-webkit-background-clip: text;</p>
+<p>-webkit-text-fill-color: transparent;</p>
+<p>animation: fadeInDown 0.8s ease-out;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Container */</p>
+<p>.container {</p>
+<p>max-width: 1200px;</p>
+<p>margin: 0 auto;</p>
+<p>padding: 0 24px;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Glassmorphism Navbar */</p>
+<p>.navbar {</p>
+<p>background: rgba(255, 255, 255, 0.85);</p>
+<p>backdrop-filter: blur(12px);</p>
+<p>-webkit-backdrop-filter: blur(12px);</p>
+<p>box-shadow: var(--shadow-sm);</p>
+<p>position: sticky;</p>
+<p>top: 0;</p>
+<p>z-index: 100;</p>
+<p>padding: 1rem 0;</p>
+<p>border-bottom: 1px solid rgba(255, 255, 255, 0.3);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.navbar .container {</p>
+<p>display: flex;</p>
+<p>justify-content: space-between;</p>
+<p>align-items: center;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.brand {</p>
+<p>font-size: 1.5rem;</p>
+<p>font-weight: 800;</p>
+<p>color: var(--primary-color);</p>
+<p>text-decoration: none;</p>
+<p>letter-spacing: -0.025em;</p>
+<p>transition: transform 0.2s ease;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.brand:hover {</p>
+<p>transform: scale(1.05);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.nav-links {</p>
+<p>list-style: none;</p>
+<p>display: flex;</p>
+<p>gap: 2rem;</p>
+<p>align-items: center;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.nav-links a {</p>
+<p>text-decoration: none;</p>
+<p>color: var(--text-muted);</p>
+<p>font-weight: 600;</p>
+<p>font-size: 0.95rem;</p>
+<p>transition: all 0.3s ease;</p>
+<p>padding: 0.5rem 1rem;</p>
+<p>border-radius: var(--radius-md);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.nav-links a:hover {</p>
+<p>color: var(--primary-color);</p>
+<p>background-color: var(--secondary-color);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.nav-links a.active {</p>
+<p>color: var(--primary-color);</p>
+<p>background-color: var(--secondary-color);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Product Grid */</p>
+<p>.product-grid {</p>
+<p>display: grid;</p>
+<p>grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));</p>
+<p>gap: 2.5rem;</p>
+<p>padding: 2rem 0;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Premium Product Cards */</p>
+<p>.product-card {</p>
+<p>background: var(--card-bg);</p>
+<p>border-radius: var(--radius-lg);</p>
+<p>overflow: hidden;</p>
+<p>box-shadow: var(--shadow-md);</p>
+<p>transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);</p>
+<p>position: relative;</p>
+<p>border: 1px solid var(--border-color);</p>
+<p>opacity: 0;</p>
+<p>animation: fadeInUp 0.6s ease-out forwards;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.product-card:nth-child(1) { animation-delay: 0.1s; }</p>
+<p>.product-card:nth-child(2) { animation-delay: 0.2s; }</p>
+<p>.product-card:nth-child(3) { animation-delay: 0.3s; }</p>
+<p>&nbsp;</p>
+<p>.product-card:hover {</p>
+<p>transform: translateY(-8px);</p>
+<p>box-shadow: var(--shadow-hover);</p>
+<p>border-color: transparent;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Images */</p>
+<p>.product-image {</p>
+<p>width: 100%;</p>
+<p>height: 250px;</p>
+<p>object-fit: cover;</p>
+<p>border-bottom: 1px solid var(--border-color);</p>
+<p>transition: transform 0.5s ease;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.product-card:hover .product-image {</p>
+<p>transform: scale(1.05);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.product-info {</p>
+<p>padding: 1.8rem;</p>
+<p>background: var(--card-bg);</p>
+<p>position: relative;</p>
+<p>z-index: 1;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.product-info h3 {</p>
+<p>font-size: 1.25rem;</p>
+<p>margin-bottom: 0.5rem;</p>
+<p>color: var(--text-main);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.product-info .price {</p>
+<p>color: var(--primary-color);</p>
+<p>font-size: 1.5rem;</p>
+<p>font-weight: 800;</p>
+<p>margin-bottom: 1.5rem;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Buttons */</p>
+<p>.btn {</p>
+<p>display: inline-block;</p>
+<p>padding: 0.8rem 1.5rem;</p>
+<p>border: none;</p>
+<p>border-radius: var(--radius-md);</p>
+<p>font-size: 1rem;</p>
+<p>font-weight: 600;</p>
+<p>cursor: pointer;</p>
+<p>text-align: center;</p>
+<p>text-decoration: none;</p>
+<p>transition: all 0.3s ease;</p>
+<p>width: 100%;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.btn-primary {</p>
+<p>background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));</p>
+<p>color: white;</p>
+<p>box-shadow: 0 4px 6px rgba(99, 102, 241, 0.25);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.btn-primary:hover {</p>
+<p>background: linear-gradient(135deg, var(--primary-hover), var(--primary-color));</p>
+<p>transform: translateY(-2px);</p>
+<p>box-shadow: 0 6px 12px rgba(99, 102, 241, 0.35);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.btn-primary:active {</p>
+<p>transform: translateY(0);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.btn-danger {</p>
+<p>background: var(--danger-color);</p>
+<p>color: white;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.btn-danger:hover {</p>
+<p>background: #dc2626;</p>
+<p>transform: translateY(-2px);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Tables (Cart &amp; Checkout) */</p>
+<p>.cart-table, .checkout-table {</p>
+<p>width: 100%;</p>
+<p>border-collapse: separate;</p>
+<p>border-spacing: 0;</p>
+<p>margin-top: 2rem;</p>
+<p>background: var(--card-bg);</p>
+<p>border-radius: var(--radius-lg);</p>
+<p>overflow: hidden;</p>
+<p>box-shadow: var(--shadow-md);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.cart-table th, .checkout-table th {</p>
+<p>background: var(--secondary-color);</p>
+<p>padding: 1.2rem;</p>
+<p>text-align: left;</p>
+<p>font-weight: 700;</p>
+<p>color: var(--text-muted);</p>
+<p>text-transform: uppercase;</p>
+<p>font-size: 0.85rem;</p>
+<p>letter-spacing: 0.05em;</p>
+<p>border-bottom: 2px solid var(--border-color);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.cart-table td, .checkout-table td {</p>
+<p>padding: 1.5rem 1.2rem;</p>
+<p>border-bottom: 1px solid var(--border-color);</p>
+<p>vertical-align: middle;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.cart-table tr:last-child td, .checkout-table tr:last-child td {</p>
+<p>border-bottom: none;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.cart-table tr:hover td {</p>
+<p>background-color: rgba(248, 250, 252, 0.5);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Cart Specific Styles */</p>
+<p>.cart-summary {</p>
+<p>background: var(--card-bg);</p>
+<p>padding: 2rem;</p>
+<p>border-radius: var(--radius-lg);</p>
+<p>box-shadow: var(--shadow-md);</p>
+<p>margin-top: 2rem;</p>
+<p>text-align: right;</p>
+<p>animation: fadeInUp 0.6s ease-out 0.2s forwards;</p>
+<p>opacity: 0;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.cart-summary h3 {</p>
+<p>font-size: 1.5rem;</p>
+<p>margin-bottom: 1.5rem;</p>
+<p>display: flex;</p>
+<p>justify-content: space-between;</p>
+<p>align-items: center;</p>
+<p>border-bottom: 1px solid var(--border-color);</p>
+<p>padding-bottom: 1rem;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.cart-summary h3 span:last-child {</p>
+<p>color: var(--primary-color);</p>
+<p>font-size: 2rem;</p>
+<p>font-weight: 800;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.cart-actions {</p>
+<p>display: flex;</p>
+<p>justify-content: flex-end;</p>
+<p>gap: 1rem;</p>
+<p>margin-top: 2rem;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.cart-actions .btn {</p>
+<p>width: auto;</p>
+<p>padding: 1rem 2rem;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Input Styles */</p>
+<p>input[type="number"] {</p>
+<p>width: 80px;</p>
+<p>padding: 0.6rem;</p>
+<p>border: 1px solid var(--border-color);</p>
+<p>border-radius: var(--radius-sm);</p>
+<p>text-align: center;</p>
+<p>font-weight: 600;</p>
+<p>transition: border-color 0.3s ease;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>input[type="number"]:focus {</p>
+<p>outline: none;</p>
+<p>border-color: var(--primary-color);</p>
+<p>box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.form-group {</p>
+<p>margin-bottom: 1.5rem;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.form-group label {</p>
+<p>display: block;</p>
+<p>margin-bottom: 0.5rem;</p>
+<p>font-weight: 600;</p>
+<p>color: var(--text-main);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.form-control {</p>
+<p>width: 100%;</p>
+<p>padding: 1rem;</p>
+<p>border: 1px solid var(--border-color);</p>
+<p>border-radius: var(--radius-md);</p>
+<p>font-size: 1rem;</p>
+<p>transition: all 0.3s ease;</p>
+<p>background-color: var(--secondary-color);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.form-control:focus {</p>
+<p>outline: none;</p>
+<p>border-color: var(--primary-color);</p>
+<p>background-color: white;</p>
+<p>box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Alerts */</p>
+<p>.alert {</p>
+<p>padding: 1rem 1.5rem;</p>
+<p>border-radius: var(--radius-md);</p>
+<p>margin-bottom: 2rem;</p>
+<p>font-weight: 500;</p>
+<p>animation: fadeInDown 0.4s ease-out;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.alert.success {</p>
+<p>background-color: #ecfdf5;</p>
+<p>color: #065f46;</p>
+<p>border-left: 4px solid var(--success-color);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.alert.error {</p>
+<p>background-color: #fef2f2;</p>
+<p>color: #991b1b;</p>
+<p>border-left: 4px solid var(--danger-color);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Empty State */</p>
+<p>.empty-cart {</p>
+<p>text-align: center;</p>
+<p>padding: 4rem 2rem;</p>
+<p>background: var(--card-bg);</p>
+<p>border-radius: var(--radius-lg);</p>
+<p>box-shadow: var(--shadow-sm);</p>
+<p>color: var(--text-muted);</p>
+<p>}</p>
+<p>.empty-cart p {</p>
+<p>font-size: 1.2rem;</p>
+<p>margin-top: 1rem;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Product Thumbnail in Tables */</p>
+<p>.product-thumbnail {</p>
+<p>width: 60px;</p>
+<p>height: 60px;</p>
+<p>object-fit: cover;</p>
+<p>border-radius: var(--radius-sm);</p>
+<p>box-shadow: var(--shadow-sm);</p>
+<p>vertical-align: middle;</p>
+<p>margin-right: 15px;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.product-name-with-img {</p>
+<p>display: flex;</p>
+<p>align-items: center;</p>
+<p>font-weight: 600;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Layout for Checkout */</p>
+<p>.checkout-layout {</p>
+<p>display: grid;</p>
+<p>grid-template-columns: 1fr 1.5fr;</p>
+<p>gap: 3rem;</p>
+<p>margin-top: 2rem;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.checkout-form-container {</p>
+<p>background: var(--card-bg);</p>
+<p>padding: 2.5rem;</p>
+<p>border-radius: var(--radius-lg);</p>
+<p>box-shadow: var(--shadow-md);</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>.checkout-summary-container {</p>
+<p>position: sticky;</p>
+<p>top: 100px;</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Animations */</p>
+<p>@keyframes fadeInUp {</p>
+<p>from {</p>
+<p>opacity: 0;</p>
+<p>transform: translateY(20px);</p>
+<p>}</p>
+<p>to {</p>
+<p>opacity: 1;</p>
+<p>transform: translateY(0);</p>
+<p>}</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>@keyframes fadeInDown {</p>
+<p>from {</p>
+<p>opacity: 0;</p>
+<p>transform: translateY(-20px);</p>
+<p>}</p>
+<p>to {</p>
+<p>opacity: 1;</p>
+<p>transform: translateY(0);</p>
+<p>}</p>
+<p>}</p>
+<p>&nbsp;</p>
+<p>/* Responsive Design */</p>
+<p>@media (max-width: 768px) {</p>
+<p>.checkout-layout {</p>
+<p>grid-template-columns: 1fr;</p>
+<p>}</p>
+<p>.nav-links {</p>
+<p>gap: 1rem;</p>
+<p>}</p>
+<p>.page-title {</p>
+<p>font-size: 2rem;</p>
+<p>}</p>
+<p>.checkout-summary-container {</p>
+<p>position: static;</p>
+<p>}</p>
+<p>}</p>
+<p>&nbsp;</p>
+<br/>
+</body>
+</html>
